@@ -3251,6 +3251,15 @@ is_directory (const struct fileinfo *f)
   return f->filetype == directory || f->filetype == arg_directory;
 }
 
+/* Return true if F refers to a directory or a symlink pointing at a directory.  */
+static bool
+is_directory_or_symlink_to_dirctory (const struct fileinfo *f)
+{
+  return f->filetype == directory
+    || f->filetype == arg_directory
+    || (f->filetype == symbolic_link && S_ISDIR(f->linkmode));
+}
+
 /* Put the name of the file that FILENAME is a symbolic link to
    into the LINKNAME field of 'f'.  COMMAND_LINE_ARG indicates whether
    FILENAME is a command-line argument.  */
@@ -3396,8 +3405,8 @@ typedef int (*qsortFunc)(V a, V b);
 #define DIRFIRST_CHECK(a, b)						\
   do									\
     {									\
-      bool a_is_dir = is_directory ((struct fileinfo const *) a);	\
-      bool b_is_dir = is_directory ((struct fileinfo const *) b);	\
+      bool a_is_dir = is_directory_or_symlink_to_dirctory ((struct fileinfo const *) a); \
+      bool b_is_dir = is_directory_or_symlink_to_dirctory ((struct fileinfo const *) b);	\
       if (a_is_dir && !b_is_dir)					\
         return -1;         /* a goes before b */			\
       if (!a_is_dir && b_is_dir)					\
