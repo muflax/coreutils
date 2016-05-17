@@ -2969,10 +2969,10 @@ gobble_file (char const *name, enum filetype type, ino_t inode,
               || is_colored (C_STICKY_OTHER_WRITABLE)))
       /* When dereferencing symlinks, the inode and type must come from
          stat, but readdir provides the inode and type of lstat.  */
-      || ((print_inode || format_needs_type)
+      || ((print_inode || format_needs_type || directories_first)
           && (type == symbolic_link || type == unknown)
           && (dereference == DEREF_ALWAYS
-              || color_symlink_as_referent || check_symlink_color))
+              || color_symlink_as_referent || check_symlink_color || directories_first))
       /* Command line dereferences are already taken care of by the above
          assertion that the inode number is not yet known.  */
       || (print_inode && inode == NOT_AN_INODE_NUMBER)
@@ -3113,7 +3113,7 @@ gobble_file (char const *name, enum filetype type, ino_t inode,
         }
 
       if (S_ISLNK (f->stat.st_mode)
-          && (format == long_format || check_symlink_color))
+          && (format == long_format || check_symlink_color || directories_first))
         {
           struct stat linkstats;
 
@@ -3123,7 +3123,7 @@ gobble_file (char const *name, enum filetype type, ino_t inode,
           /* Avoid following symbolic links when possible, ie, when
              they won't be traced and when no indicator is needed.  */
           if (linkname
-              && (file_type <= indicator_style || check_symlink_color)
+              && (file_type <= indicator_style || check_symlink_color || directories_first)
               && stat (linkname, &linkstats) == 0)
             {
               f->linkok = true;
@@ -3131,7 +3131,7 @@ gobble_file (char const *name, enum filetype type, ino_t inode,
               /* Symbolic links to directories that are mentioned on the
                  command line are automatically traced if not being
                  listed as files.  */
-              if (!command_line_arg || format == long_format
+              if (!command_line_arg || format == long_format || directories_first
                   || !S_ISDIR (linkstats.st_mode))
                 {
                   /* Get the linked-to file's mode for the filetype indicator
