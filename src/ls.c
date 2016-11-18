@@ -4248,6 +4248,20 @@ print_name_with_quoting (const struct fileinfo *f,
   if (stack)
     PUSH_CURRENT_DIRED_POS (stack);
 
+  // print final / no matter what
+  if (symlink_target && S_ISDIR(f->linkmode)) {
+    size_t len = strlen(name);
+    if (f->linkname[len-1] != '/') {
+      char* slash_name = alloca(len+2);
+      slash_name[len+1] = '\0';
+
+      strncpy(slash_name, name, len);
+      slash_name[len] = '/';
+
+      name = slash_name;
+    }
+  }
+
   size_t width = quote_name (stdout, name, filename_quoting_options, NULL);
   dired_pos += width;
 
